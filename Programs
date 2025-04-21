@@ -1,0 +1,445 @@
+Experiment 7  
+Aim: Creation of a Hostel Mess database and performing given queries. The database keeps track 
+of all the available hostel, mess menu, warden and student details. Each hostel has a unique 
+number, name and type of hostel which gives information about whether the hostel is forgirls or 
+boys. Keep track of the mess menu of each hostel to record in which day what special dishes are 
+given for breakfast, lunch and dinner. 
+-- Create tables
+CREATE TABLE Std (
+    student_id NUMBER PRIMARY KEY,
+    student_name VARCHAR(50),
+    gender VARCHAR(10),
+    hostel_name VARCHAR(20)
+);
+
+CREATE TABLE Hostel (
+    hostel_name VARCHAR(20) PRIMARY KEY,
+    warden_count NUMBER
+);
+
+CREATE TABLE Mess_Menu (
+    hostel_name VARCHAR(20),
+    day VARCHAR(15),
+    meal_type VARCHAR(20),
+    item VARCHAR(50)
+);
+
+-- Insert data into Std
+INSERT ALL  
+    INTO Std VALUES (1, 'Aarav', 'Male', 'X') 
+    INTO Std VALUES (2, 'Priya', 'Female', 'X') 
+    INTO Std VALUES (3, 'Rahul', 'Male', 'Y') 
+    INTO Std VALUES (4, 'Anjali', 'Female', 'Y') 
+    INTO Std VALUES (5, 'Kunal', 'Male', '5') 
+    INTO Std VALUES (6, 'Meena', 'Female', '5') 
+SELECT * FROM dual;
+
+-- Insert data into Hostel
+INSERT INTO Hostel VALUES ('X', 2); 
+INSERT INTO Hostel VALUES ('Y', 1); 
+INSERT INTO Hostel VALUES ('5', 3); 
+
+-- Insert data into Mess_Menu
+INSERT INTO Mess_Menu VALUES ('X', 'Tuesday', 'Breakfast', 'Poha'); 
+INSERT INTO Mess_Menu VALUES ('X', 'Tuesday', 'Lunch', 'Dal Rice'); 
+INSERT INTO Mess_Menu VALUES ('Y', 'Tuesday', 'Breakfast', 'Idli'); 
+INSERT INTO Mess_Menu VALUES ('5', 'Thursday', 'Breakfast', 'Paratha'); 
+INSERT INTO Mess_Menu VALUES ('5', 'Thursday', 'Lunch', 'Rajma Chawal');
+
+-- 1. Total number of girls and boys in the college
+SELECT gender, COUNT(*) AS total_count 
+FROM Std 
+GROUP BY gender;
+
+-- 2. Menu in Hostel 'X' on Tuesday
+SELECT * 
+FROM Mess_Menu 
+WHERE hostel_name = 'X' AND day = 'Tuesday';
+
+-- 3. Number of wardens in each hostel
+SELECT hostel_name, warden_count 
+FROM Hostel;
+
+-- 4. Total number of students in hostel 'X'
+SELECT hostel_name, COUNT(*) AS total_students 
+FROM Std 
+WHERE hostel_name = 'X' 
+GROUP BY hostel_name;
+
+-- 5. Change Thursday's breakfast item of hostel number '5' to 'Noodles'
+UPDATE Mess_Menu 
+SET item = 'Noodles' 
+WHERE hostel_name = '5' AND day = 'Thursday' AND meal_type = 'Breakfast';
+
+-- 6. Display names of hostels having more students than hostel 'X'
+SELECT hostel_name 
+FROM Std 
+GROUP BY hostel_name 
+HAVING COUNT(*) > (
+    SELECT COUNT(*) FROM Std WHERE hostel_name = 'X'
+);
+
+Experiment 6 
+Aim: Creation of a Bank database and performing given queries . The database is organized into   
+many branches. A customer can open different kinds of accounts in different branches. The 
+account holder can enquire about the balance in his account. The database keeps track of a 
+customer by his ID, name and address. Accounts (identified by account number) have a starting 
+date and balance. The database keeps track of every transaction with detail information about it. 
+
+-- 1. Create Tables
+
+CREATE TABLE Branch (
+    branch_id INT PRIMARY KEY,
+    branch_name VARCHAR(50),
+    city VARCHAR(50)
+);
+
+CREATE TABLE Customer (
+    cust_id INT PRIMARY KEY,
+    cust_name VARCHAR(50),
+    address VARCHAR(100)
+);
+
+CREATE TABLE Account (
+    acc_no INT PRIMARY KEY,
+    cust_id INT,
+    branch_id INT,
+    opening_date DATE,
+    balance DECIMAL(10, 2),
+    FOREIGN KEY (cust_id) REFERENCES Customer(cust_id),
+    FOREIGN KEY (branch_id) REFERENCES Branch(branch_id)
+);
+
+CREATE TABLE Transaction (
+    trans_id INT PRIMARY KEY,
+    acc_no INT,
+    trans_date DATE,
+    amount DECIMAL(10, 2),
+    trans_type VARCHAR(20),
+    FOREIGN KEY (acc_no) REFERENCES Account(acc_no)
+);
+
+-- 2. Insert Sample Data
+
+-- Insert into Branch
+INSERT ALL 
+    INTO Branch VALUES(1, 'Main Branch', 'Surat')
+    INTO Branch VALUES(2, 'North Branch', 'Mumbai')
+    INTO Branch VALUES(3, 'South Branch', 'Siliguri')
+SELECT * FROM dual;
+
+-- Insert into Customer
+INSERT ALL
+    INTO Customer VALUES(101, 'XYZ', 'Delhi')
+    INTO Customer VALUES(102, 'ABC', 'Mumbai')
+    INTO Customer VALUES(103, 'LMN', 'Surat')
+    INTO Customer VALUES(104, 'PQR', 'Siliguri')
+SELECT * FROM dual;
+
+-- Insert into Account
+INSERT ALL
+    INTO Account VALUES(1001, 101, 1, TO_DATE('2016-01-10', 'YYYY-MM-DD'), 50000)
+    INTO Account VALUES(1002, 102, 2, TO_DATE('2017-03-15', 'YYYY-MM-DD'), 15000)
+    INTO Account VALUES(1003, 103, 1, TO_DATE('2018-07-12', 'YYYY-MM-DD'), 35000)
+    INTO Account VALUES(1004, 104, 3, TO_DATE('2019-09-05', 'YYYY-MM-DD'), 25000)
+SELECT * FROM dual;
+
+-- Insert into Transaction
+INSERT ALL
+    INTO Transaction VALUES(1, 1001, TO_DATE('2017-02-14', 'YYYY-MM-DD'), 2000, 'Deposit')
+    INTO Transaction VALUES(2, 1002, TO_DATE('2017-02-14', 'YYYY-MM-DD'), 500, 'Withdraw')
+    INTO Transaction VALUES(3, 1003, TO_DATE('2017-02-14', 'YYYY-MM-DD'), 1500, 'Deposit')
+    INTO Transaction VALUES(4, 1001, TO_DATE('2017-02-14', 'YYYY-MM-DD'), 1000, 'Withdraw')
+SELECT * FROM dual;
+
+-- 3. Query Executions
+
+-- Query 1: Branch details with average balance > 10000
+SELECT b.branch_id, b.branch_name, AVG(a.balance) AS avg_balance
+FROM Branch b
+JOIN Account a ON b.branch_id = a.branch_id
+GROUP BY b.branch_id, b.branch_name
+HAVING AVG(a.balance) > 10000;
+
+-- Query 2: Branches in cities starting with 'S'
+SELECT * 
+FROM Branch 
+WHERE city LIKE 'S%';
+
+-- Query 3: Number of depositors in each branch
+SELECT b.branch_name, COUNT(DISTINCT a.cust_id) AS num_of_depositors
+FROM Branch b
+JOIN Account a ON b.branch_id = a.branch_id
+GROUP BY b.branch_name;
+
+-- Query 4: Total balance of customer 'XYZ'
+SELECT c.cust_name, SUM(a.balance) AS total_balance
+FROM Customer c
+JOIN Account a ON c.cust_id = a.cust_id
+WHERE c.cust_name = 'XYZ'
+GROUP BY c.cust_name;
+
+-- Query 5: Customers with balance between 30000 and 40000
+SELECT DISTINCT c.*
+FROM Customer c
+JOIN Account a ON c.cust_id = a.cust_id
+WHERE a.balance BETWEEN 30000 AND 40000;
+
+-- Query 6: Customers who had transactions on 14-Feb-2017
+SELECT DISTINCT c.*, t.*
+FROM Customer c
+JOIN Account a ON c.cust_id = a.cust_id
+JOIN Transaction t ON a.acc_no = t.acc_no
+WHERE t.trans_date = TO_DATE('2017-02-14', 'YYYY-MM-DD');
+
+Experiment 5  
+Aim: Creation of University Database and performing the given queries. The  
+database records the details of faculties, departments, students, courses,  
+prerequisite for different courses, section, grade report of students and other  
+relevant information.  
+
+-- Create Faculty table
+CREATE TABLE Faculties (
+    fid INT PRIMARY KEY,
+    name VARCHAR(100),
+    department VARCHAR(50),
+    salary INT,
+    dependents VARCHAR(100)
+);
+
+-- Insert data into Faculties
+INSERT ALL
+    INTO Faculties VALUES (1, 'Dr. A', 'CSE', 90000, 'd1')
+    INTO Faculties VALUES (2, 'Dr. B', 'ECE', 85000, 'd2')
+    INTO Faculties VALUES (3, 'Dr. C', 'CSE', 95000, 'd3')
+    INTO Faculties VALUES (4, 'Dr. D', 'MECH', 88000, 'd4')
+    INTO Faculties VALUES (5, 'Dr. XYZ', 'CSE', 91000, 'd5')
+SELECT * FROM dual;
+
+-- Create Students table
+CREATE TABLE Students (
+    sid INT PRIMARY KEY,
+    name VARCHAR(100),
+    sem INT
+);
+
+-- Insert data into Students
+INSERT ALL
+    INTO Students VALUES (101, 'Alice', 6)
+    INTO Students VALUES (102, 'Bob', 6)
+    INTO Students VALUES (103, 'Charlie', 6)
+SELECT * FROM dual;
+
+-- Create Courses table
+CREATE TABLE Courses (
+    cid INT PRIMARY KEY,
+    cname VARCHAR(50),
+    fid INT,
+    sid INT,
+    grade CHAR(1),
+    semester INT,
+    year INT,
+    section VARCHAR(10),
+    FOREIGN KEY (fid) REFERENCES Faculties(fid),
+    FOREIGN KEY (sid) REFERENCES Students(sid)
+);
+
+-- Insert data into Courses
+INSERT ALL
+    INTO Courses VALUES (201, 'XYZ', 1, 101, 'A', 6, 2014, 'A')
+    INTO Courses VALUES (202, 'XYZ', 1, 102, 'B', 6, 2014, 'A')
+    INTO Courses VALUES (203, 'ABC', 2, 103, 'A', 6, 2014, 'B')
+SELECT * FROM dual;
+
+-- Queries
+
+-- 1. Find the highest paid faculty
+SELECT *
+FROM Faculties
+WHERE salary = (SELECT MAX(salary) FROM Faculties);
+
+-- 2. Display all faculties whose salaries are greater than the highest paid faculty of ECE department
+SELECT *
+FROM Faculties
+WHERE salary > (SELECT MAX(salary) FROM Faculties WHERE department = 'ECE');
+
+-- 3. Display all students who got an 'A' in course 'XYZ' for 6th semester in 2014
+SELECT s.*
+FROM Students s
+JOIN Courses c ON s.sid = c.sid
+WHERE c.cname = 'XYZ' AND c.grade = 'A' AND c.semester = 6 AND c.year = 2014;
+
+-- 4. List the courses taught by faculty "Dr. XYZ" for 6th Semester in 2014
+SELECT c.*
+FROM Courses c
+JOIN Faculties f ON c.fid = f.fid
+WHERE f.name = 'Dr. XYZ' AND c.semester = 6 AND c.year = 2014;
+
+-- 5. Display all faculties along with their dependents
+SELECT name, dependents AS "Dependent From Faculties"
+FROM Faculties;
+
+-- 6. Display the details of all faculties teaching courses along with section details
+SELECT f.name, c.cname, c.section, c.semester, c.year
+FROM Faculties f
+JOIN Courses c ON f.fid = c.fid;
+
+Experiment 4 
+Aim: Creation of a database for recording employee’s details working in different companies and 
+perform the given queries. 
+
+-- Create Companies table
+CREATE TABLE Companies ( 
+    Company VARCHAR(10) PRIMARY KEY, 
+    City VARCHAR(16) 
+);
+
+-- Create Employees table
+CREATE TABLE Employees ( 
+    EmpID INT PRIMARY KEY, 
+    Name VARCHAR(16), 
+    City VARCHAR(16), 
+    Salary INT, 
+    Company VARCHAR(10),
+    FOREIGN KEY (Company) REFERENCES Companies(Company)
+);
+
+-- Insert data into Employees
+INSERT ALL 
+    INTO Employees VALUES (1, 'Alice', 'Mumbai', 60000, 'HP') 
+    INTO Employees VALUES (2, 'Bob', 'Delhi', 55000, 'DELL') 
+    INTO Employees VALUES (3, 'Charlie', 'Bangalore', 75000, 'DELL') 
+    INTO Employees VALUES (4, 'David', 'Mumbai', 48000, 'INFOSYS') 
+    INTO Employees VALUES (5, 'Emma', 'Chennai', 52000, 'HP') 
+    INTO Employees VALUES (6, 'Frank', 'Pune', 90000, 'INFOSYS') 
+    INTO Employees VALUES (7, 'Grace', 'Delhi', 105000, 'HP') 
+    INTO Employees VALUES (8, 'Hannah', 'Bangalore', 67000, 'DELL') 
+    INTO Employees VALUES (9, 'Isaac', 'Pune', 50000, 'INFOSYS') 
+    INTO Employees VALUES (10, 'Jack', 'Mumbai', 120000, 'DELL') 
+SELECT * FROM DUAL;
+
+-- Insert data into Companies
+INSERT ALL 
+    INTO Companies VALUES ('HP', 'Mumbai') 
+    INTO Companies VALUES ('DELL', 'Bangalore') 
+    INTO Companies VALUES ('INFOSYS', 'Pune') 
+SELECT * FROM DUAL;
+
+-- Queries:
+
+-- Query 1: Display all employees who work for a particular company (e.g. “HP”)
+SELECT * FROM Employees WHERE Company = 'HP';
+
+-- Query 2: Display the names, cities, and salaries of all employees who work for “DELL”
+SELECT Name, City, Salary FROM Employees WHERE Company = 'DELL';
+
+-- Query 3: Display names, cities, and salaries of employees working in “DELL” and earning more than 50000
+SELECT Name, City, Salary FROM Employees WHERE Company = 'DELL' AND Salary > 50000;
+
+-- Query 4: Employees who live in the same city as the company they work for
+SELECT E.*  
+FROM Employees E  
+JOIN Companies C ON E.Company = C.Company 
+WHERE E.City = C.City;
+
+-- Query 5: Employees who do NOT work for “HP”
+SELECT * FROM Employees WHERE Company <> 'HP';
+
+-- Query 6: Employees earning more than every employee of “INFOSYS”
+SELECT * FROM Employees  
+WHERE Salary > (SELECT MAX(Salary) FROM Employees WHERE Company = 'INFOSYS');
+
+-- Query 7: Employees in increasing order of salary
+SELECT * FROM Employees ORDER BY Salary ASC;
+
+-- Query 8: Employees in decreasing order of salary
+SELECT * FROM Employees ORDER BY Salary DESC;
+
+-- Query 9: Sum of salaries of employees earning more than 100000
+SELECT SUM(Salary) AS Total_High_Salary 
+FROM Employees 
+WHERE Salary > 100000;
+
+Experiment 3 
+Aim: Creation of database for Car Insurance and execute the given queries.
+
+-- Table Creation: CUSTOMERS
+CREATE TABLE CUSTOMERS ( 
+    CID CHAR(3) NOT NULL PRIMARY KEY, 
+    CNAME VARCHAR(16), 
+    ADDRESS VARCHAR(16), 
+    MOBILE VARCHAR(16)
+);
+
+-- Table Creation: CARS
+CREATE TABLE CARS ( 
+    CHASSISNO VARCHAR(10) PRIMARY KEY, 
+    TYPE VARCHAR(10), 
+    COMPANY VARCHAR(10), 
+    COST INTEGER, 
+    INSURED VARCHAR(3), 
+    CID CHAR(3), 
+    CONSTRAINT FK_CUSTOMER FOREIGN KEY (CID) REFERENCES CUSTOMERS(CID)
+);
+
+-- Table Creation: INSURANCES
+CREATE TABLE INSURANCES ( 
+    CHASSISNO VARCHAR(10) NOT NULL, 
+    INSURANCE_NO INTEGER, 
+    INSURANCE_AMOUNT INTEGER, 
+    PRIMARY KEY (CHASSISNO), 
+    CONSTRAINT FK_CARINSURANCE FOREIGN KEY (CHASSISNO) REFERENCES CARS(CHASSISNO)
+);
+
+-- Insert Data into CUSTOMERS
+INSERT ALL 
+    INTO CUSTOMERS VALUES ('C01', 'Alice', 'Mumbai', '9876543210') 
+    INTO CUSTOMERS VALUES ('C02', 'Bob', 'Delhi', '9123456789') 
+    INTO CUSTOMERS VALUES ('C03', 'Charlie', 'Chennai', '9988776655') 
+    INTO CUSTOMERS VALUES ('C04', 'David', 'Pune', '9090909090') 
+SELECT * FROM DUAL;
+
+-- Insert Data into CARS
+INSERT ALL 
+    INTO CARS VALUES ('CH001', 'SUV', 'Toyota', 1500000, 'YES', 'C01') 
+    INTO CARS VALUES ('CH002', 'Sedan', 'Honda', 950000, 'YES', 'C02') 
+    INTO CARS VALUES ('CH003', 'Hatchback', 'Hyundai', 600000, 'NO', 'C03') 
+    INTO CARS VALUES ('CH004', 'SUV', 'Mahindra', 1600000, 'YES', 'C04') 
+    INTO CARS VALUES ('CH005', 'Sedan', 'Skoda', 1300000, 'YES', 'C01') 
+SELECT * FROM DUAL;
+
+-- Insert Data into INSURANCES
+INSERT ALL 
+    INTO INSURANCES VALUES ('CH001', 101, 200000) 
+    INTO INSURANCES VALUES ('CH002', 102, 90000) 
+    INTO INSURANCES VALUES ('CH004', 103, 150000) 
+    INTO INSURANCES VALUES ('CH005', 104, 110000) 
+SELECT * FROM DUAL;
+
+-- Query 1: Display cars having insurance amount > 100000
+SELECT *  
+FROM CARS C  
+JOIN INSURANCES I ON C.CHASSISNO = I.CHASSISNO  
+WHERE I.INSURANCE_AMOUNT > 100000;
+
+-- Query 2: Display all customers having cars of type 'SUV'
+SELECT * 
+FROM CUSTOMERS C 
+JOIN CARS CR ON C.CID = CR.CID 
+WHERE CR.TYPE = 'SUV';
+
+-- Query 3: List all cars not insured
+SELECT * 
+FROM CARS 
+WHERE INSURED = 'NO';
+
+-- Query 4: Display all car details in increasing order of cost
+SELECT * 
+FROM CARS 
+ORDER BY COST ASC;
+
+-- Query 5: Display insured cars by company 'Honda'
+SELECT * 
+FROM CARS 
+WHERE COMPANY = 'Honda' AND INSURED = 'YES';
+
