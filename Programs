@@ -443,3 +443,85 @@ SELECT *
 FROM CARS 
 WHERE COMPANY = 'Honda' AND INSURED = 'YES';
 
+Experiment 2  
+  
+Aim: Creation of Student Record Keeping System. The system should also record the details of faculties and  
+other relevant information if any. Also perform the given queries. 
+
+-- Create FACULTY table
+CREATE TABLE FACULTY (  
+    FID INTEGER PRIMARY KEY,  
+    NAME VARCHAR(20),  
+    SEX CHAR(1),  
+    AGE INTEGER  
+);  
+
+-- Create STUDENT table
+CREATE TABLE STUDENT (  
+    ROLLNO INTEGER PRIMARY KEY,  
+    NAME VARCHAR(20),  
+    AGE INTEGER,  
+    SEX CHAR(1),  
+    CREDIT INTEGER,  
+    SEMESTER INTEGER,  
+    DEPARTMENT VARCHAR(16),  
+    ENROLLED_IN INTEGER,  
+    FACULTY INTEGER,  
+    FOREIGN KEY (FACULTY) REFERENCES FACULTY(FID)  
+);  
+
+-- Insert data into FACULTY
+INSERT ALL  
+INTO FACULTY VALUES (1, 'Amar', 'M', 45)  
+INTO FACULTY VALUES (2, 'Ashish', 'M', 38)  
+INTO FACULTY VALUES (3, 'Rahul', 'M', 50)  
+INTO FACULTY VALUES (4, 'Priya', 'F', 42)  
+SELECT * FROM DUAL;  
+
+-- Insert data into STUDENT
+INSERT ALL  
+INTO STUDENT VALUES (101, 'John', 20, 'M', 85, 6, 'CSE', 2020, 1)  
+INTO STUDENT VALUES (102, 'Alice', 21, 'F', 78, 6, 'CSE', 2020, 1)  
+INTO STUDENT VALUES (103, 'Robert', 22, 'M', 90, 6, 'ECE', 2018, 2)  
+INTO STUDENT VALUES (104, 'Sophia', 19, 'F', 95, 4, 'CSE', 2021, 2)  
+INTO STUDENT VALUES (105, 'Michael', 23, 'M', 88, 6, 'IT', 2019, 3)  
+INTO STUDENT VALUES (106, 'Emma', 20, 'F', 76, 5, 'CSE', 2021, 4)  
+INTO STUDENT VALUES (107, 'Daniel', 22, 'M', 92, 6, 'CSE', 2022, 1)  
+INTO STUDENT VALUES (108, 'Olivia', 21, 'F', 96, 6, 'CSE', 2022, 2)  
+SELECT * FROM DUAL;  
+
+-- Query 1: Students taught by faculty 'Amar'
+SELECT *  
+FROM STUDENT S  
+JOIN FACULTY F ON S.FACULTY = F.FID  
+WHERE F.NAME = 'Amar';  
+
+-- Query 2: CSE students enrolled in 2020
+SELECT * FROM STUDENT  
+WHERE DEPARTMENT = 'CSE' AND ENROLLED_IN = 2020;  
+
+-- Query 3: Students from 2020 with credit > 80
+SELECT *  
+FROM STUDENT  
+WHERE ENROLLED_IN = 2020 AND CREDIT > 80;  
+
+-- Query 4: Count students enrolled in 2018
+SELECT COUNT(ROLLNO)  
+FROM STUDENT  
+WHERE ENROLLED_IN = 2018;  
+
+-- Query 5: 2021 students taught by faculty 'Ashish'
+SELECT *  
+FROM STUDENT S  
+JOIN FACULTY F ON S.FACULTY = F.FID  
+WHERE S.ENROLLED_IN = 2021 AND F.NAME = 'Ashish';  
+
+-- Query 6: Topper in 6th semester, enrolled in 2022
+SELECT *  
+FROM STUDENT  
+WHERE ENROLLED_IN = 2022 AND SEMESTER = 6  
+AND CREDIT = (  
+    SELECT MAX(CREDIT)  
+    FROM STUDENT  
+    WHERE SEMESTER = 6 AND ENROLLED_IN = 2022  
+);  
